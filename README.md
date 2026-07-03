@@ -122,16 +122,46 @@ pnpm run dev         # Launches Next.js Client on Port 3000
 
 ---
 
-## 🐳 Containerized Production Deployment
+## 🚢 Production Deployment
 
-You can deploy the entire stack—complete with database volume persistence and shared volume folder sharing—using the production compose file:
+You can deploy the complete stack using two different production architectures:
 
-```bash
-docker compose -f docker-compose.prod.yml --env-file .env up -d --build
-```
+### Strategy A: Always-Free Cloud Services (24/7, No Cold Starts - Recommended)
+This strategy deploys all components using free tiers that **stay awake 24/7** and do not sleep.
 
-This deploys:
-*   **Valkey** (port `6379`) with persistent data volumes.
-*   **Qdrant** (port `6333`) with persistent vector storage.
-*   **Express API** (port `8000`) and **BullMQ Worker** sharing the uploaded files volume `/app/uploads`.
-*   **Next.js Frontend** (port `3000`) built and optimized for production.
+#### 1. Databases (Vector & Caching Queue)
+*   **Vector DB (Qdrant Cloud):** Create a free cluster on [Qdrant Cloud](https://cloud.qdrant.io/) (1 GB free RAM, ~25,000 vectors). Obtain the **Cluster URL** and **API Key**.
+*   **Queue Cache (Upstash Redis):** Create a serverless database on [Upstash](https://upstash.com/). Obtain the **Redis Host**, **Port (`6379`)**, and **Password**.
+
+#### 2. Backend API & Queue Worker (Hugging Face Spaces)
+Hugging Face Spaces offers **Docker-based hosting** with **16 GB RAM & 2 vCPUs** on their free tier, running 24/7 without sleeping:
+1.  Create a **New Space** on Hugging Face, select **Docker** as the SDK, and choose the **Blank** template.
+2.  In the Space **Settings**, go to **Variables and secrets** and add:
+    *   **Variables:** `REDIS_HOST`, `REDIS_PORT` (`6379`)
+    *   **Secrets:** `REDIS_PASSWORD`, `QDRANT_URL`, `QDRANT_API_KEY`, `HUGGINGFACEHUB_API_KEY`, `GROQ_API_KEY`, `CLERK_SECRET_KEY`
+3.  Connect/push your repository. Hugging Face will compile our optimized unified [`server/Dockerfile`](file:///d:/Projects/AI/pdf-rag/server/Dockerfile) and spin up both the Express API and the background worker concurrently.
+4.  Your backend URL will be: `https://<your-username>-<your-space-name>.hf.space`
+
+#### 3. Frontend Next.js Client (Vercel)
+1.  Import your repository to [Vercel](https://vercel.com/) and set the **Root Directory** to `client`.
+2.  Add these **Environment Variables**:
+    *   `NEXT_PUBLIC_API_URL`: (Your backend Hugging Face Space URL)
+    *   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: (Your Clerk key)
+    *   `NEXT_PUBLIC_CLERK_SIGN_IN_URL`: `/sign-in`
+    *   `NEXT_PUBLIC_CLERK_SIGN_UP_URL`: `/sign-up`
+3.  Click **Deploy**.
+
+---
+
+### Strategy B: Single-Server Docker Compose
+Ideal for self-hosting on a virtual machine (such as Oracle Cloud Always Free 24GB RAM Instance, AWS EC2, or DigitalOcean):
+
+1.  Create a production `.env` file at the root folder containing your Clerk, Hugging Face, and Groq API keys.
+2.  Deploy the entire stack with one command:
+    ```bash
+    docker compose -f docker-compose.prod.yml --env-file .env up -d --build
+    ```
+    This automatically spins up and links:
+    *   **Valkey** (port `6379`) & **Qdrant** (port `6333`) with persistent data volumes.
+    *   **Express API** (port `8000`) & **BullMQ Worker** sharing the uploads directory.
+    *   **Next.js Client** (port `3000`) optimized for production.
