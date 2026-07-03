@@ -5,6 +5,7 @@ import { ProviderSettings } from "./settings-modal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Send, FileText, Sparkles, User, Info, X, HelpCircle, Layers, Loader2 } from "lucide-react";
+import { API_BASE } from "@/lib/api";
 
 interface Doc {
   pageContent?: string;
@@ -53,7 +54,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ chatId, selectedFiles, us
       const loadChatHistory = async () => {
         setIsHistoryLoading(true);
         try {
-          const res = await fetch(`http://localhost:8000/chats/${chatId}?userId=${userId}`);
+          const res = await fetch(`${API_BASE}/chats/${chatId}?userId=${userId}`);
           if (res.ok) {
             const data = await res.json();
             setMessages(data.messages || []);
@@ -84,7 +85,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({ chatId, selectedFiles, us
     setIsLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/chat", {
+      const res = await fetch(`${API_BASE}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

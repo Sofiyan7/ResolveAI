@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { X, ShieldAlert, Cpu, Key, Server, Save, LogOut, User, Trash2 } from "lucide-react";
+import { API_BASE } from "@/lib/api";
 
 export interface ProviderSettings {
   provider: "groq" | "gemini" | "ollama" | "huggingface";
@@ -75,7 +76,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
     if (!confirmed) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/api/users/${user.id}`, {
+      const res = await fetch(`${API_BASE}/api/users/${user.id}`, {
         method: "DELETE",
       });
 

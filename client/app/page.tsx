@@ -6,6 +6,7 @@ import ChatComponent from "./components/chat";
 import SettingsModal, { ProviderSettings } from "./components/settings-modal";
 import { useUser, UserButton } from "@clerk/nextjs";
 import { FileText, Trash2, Loader2, XCircle, Plus, Sparkles, MessageSquare, Settings } from "lucide-react";
+import { API_BASE } from "@/lib/api";
 
 interface IDocument {
   id: string;
@@ -50,7 +51,7 @@ export default function Home() {
   const fetchDocuments = React.useCallback(async () => {
     if (!user?.id) return;
     try {
-      const res = await fetch(`http://localhost:8000/documents?userId=${user.id}`);
+      const res = await fetch(`${API_BASE}/documents?userId=${user.id}`);
       if (res.ok) {
         const data = await res.json();
         setDocuments(data);
@@ -81,7 +82,7 @@ export default function Home() {
   const fetchChats = React.useCallback(async () => {
     if (!user?.id) return;
     try {
-      const res = await fetch(`http://localhost:8000/chats?userId=${user.id}`);
+      const res = await fetch(`${API_BASE}/chats?userId=${user.id}`);
       if (res.ok) {
         const data = await res.json();
         // Sort chats by creation date descending
@@ -124,7 +125,7 @@ export default function Home() {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:8000/documents/${id}?userId=${user.id}`, {
+      const res = await fetch(`${API_BASE}/documents/${id}?userId=${user.id}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -145,7 +146,7 @@ export default function Home() {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:8000/chats/${id}?userId=${user.id}`, {
+      const res = await fetch(`${API_BASE}/chats/${id}?userId=${user.id}`, {
         method: "DELETE",
       });
       if (res.ok) {

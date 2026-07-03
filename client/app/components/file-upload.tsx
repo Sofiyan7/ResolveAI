@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Upload, Loader2, FileUp } from "lucide-react";
+import { API_BASE } from "@/lib/api";
 
 interface FileUploadProps {
   userId: string;
@@ -19,7 +20,7 @@ const FileUploadComponent: React.FC<FileUploadProps> = ({ userId, onUploadComple
     formData.append("userId", userId);
 
     try {
-      const res = await fetch("http://localhost:8000/upload", {
+      const res = await fetch(`${API_BASE}/upload`, {
         method: "POST",
         body: formData,
       });
