@@ -133,8 +133,10 @@ const worker = new Worker(
   {
     concurrency: 10,
     connection: {
-      host: process.env.REDIS_HOST || "localhost",
-      port: parseInt(process.env.REDIS_PORT || "6379"),
+      host: process.env.REDIS_HOST,
+      port: Number(process.env.REDIS_PORT),
+      password: process.env.REDIS_PASSWORD,
+      tls: {},
     },
   },
 );

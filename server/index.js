@@ -77,11 +77,17 @@ function writeRegistry(data) {
     console.error("Error writing registry:", err);
   }
 }
-
+console.log({
+  host: process.env.REDIS_HOST,
+  port: process.env.REDIS_PORT,
+  hasPassword: !!process.env.REDIS_PASSWORD,
+});
 const queue = new Queue("file-upload-queue", {
   connection: {
-    host: process.env.REDIS_HOST || "localhost",
-    port: parseInt(process.env.REDIS_PORT || "6379"),
+    host: process.env.REDIS_HOST,
+    port: Number(process.env.REDIS_PORT),
+    password: process.env.REDIS_PASSWORD,
+    tls: {},
   },
 });
 
@@ -331,7 +337,7 @@ async function getLLMResponse({ providerSettings, messages, temperature = 0.7 })
   if (provider === "ollama") {
     const host = providerSettings?.ollamaHost || "http://localhost:11434";
     const modelName = providerSettings?.ollamaModel || "llama3.1";
-    
+
     const res = await fetch(`${host}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -494,7 +500,7 @@ app.post("/chat", async (req, res) => {
       } else {
         // If we have chat history, let the LLM try to answer using ONLY the chat history
         console.log(`[Chat API] No documents selected, attempting to answer using chat history for User ID: ${userId}`);
-        
+
         const formattedHistory = chatHistory
           .slice(-6)
           .map((m) => `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`)
@@ -746,7 +752,7 @@ app.delete("/api/users/:userId", async (req, res) => {
     // 1. Read files and delete them locally and from Qdrant
     const registry = readRegistry();
     const userDocs = registry.filter((d) => d.userId === userId);
-    
+
     // Connect to Qdrant
     let qdrantCleared = false;
     try {
