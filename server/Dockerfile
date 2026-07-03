@@ -1,4 +1,4 @@
-# Production build for server
+# Production build for server (Optimized for Hugging Face Spaces / single container)
 FROM node:20-alpine
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -15,10 +15,15 @@ RUN pnpm install --frozen-lockfile --prod
 # Copy application source code
 COPY . .
 
-# Ensure upload directory exists
-RUN mkdir -p uploads
+# Ensure uploads directory exists and set permissions
+RUN mkdir -p uploads && chmod -R 777 uploads
 
-EXPOSE 8000
+# Make startup script executable and fix potential Windows line ending issues
+RUN chmod +x start.sh && sed -i 's/\r$//' start.sh
 
-# Default command runs the Express app, can be overridden in docker-compose for the worker
-CMD ["node", "index.js"]
+# Expose standard HF Spaces port
+EXPOSE 7860
+ENV PORT=7860
+
+# Run both the worker and Express server in parallel
+CMD ["sh", "start.sh"]
