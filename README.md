@@ -23,6 +23,8 @@ ResolveAI is a production-grade, containerized Retreival-Augmented Generation (R
 
 Built with a decoupled, asynchronous microservices architecture, ResolveAI handles document parsing and vector generation in a background job worker queue to keep the API server highly responsive and non-blocking under heavy load.
 
+https://file-query-three.vercel.app/
+
 ---
 
 ## 🏗️ System Architecture
