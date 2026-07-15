@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useUser, useClerk } from "@clerk/nextjs";
-import { X, ShieldAlert, Cpu, Key, Server, Save, LogOut, User, Trash2 } from "lucide-react";
+import { X, ShieldAlert, Cpu, Key, Server, Save, LogOut, User, Trash2, Sliders } from "lucide-react";
 import { API_BASE } from "@/lib/api";
 
 export interface ProviderSettings {
@@ -11,6 +11,7 @@ export interface ProviderSettings {
   ollamaHost?: string;
   ollamaModel?: string;
   hfModel?: string;
+  k?: number;
 }
 
 interface SettingsModalProps {
@@ -28,6 +29,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
   const [ollamaHost, setOllamaHost] = React.useState("http://localhost:11434");
   const [ollamaModel, setOllamaModel] = React.useState("llama3.1");
   const [hfModel, setHfModel] = React.useState("Qwen/Qwen2.5-72B-Instruct");
+  const [kVal, setKVal] = React.useState(3);
 
   // Load settings from localStorage on mount/open
   React.useEffect(() => {
@@ -41,6 +43,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
           setOllamaHost(parsed.ollamaHost || "http://localhost:11434");
           setOllamaModel(parsed.ollamaModel || "llama3.1");
           setHfModel(parsed.hfModel || "Qwen/Qwen2.5-72B-Instruct");
+          setKVal(parsed.k || 3);
         }
       } catch (err) {
         console.error("Failed to load settings:", err);
@@ -57,6 +60,7 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
       ollamaHost: provider === "ollama" ? ollamaHost.trim() : undefined,
       ollamaModel: provider === "ollama" ? ollamaModel.trim() : undefined,
       hfModel: provider === "huggingface" ? hfModel.trim() : undefined,
+      k: kVal,
     };
     localStorage.setItem("resolveai_settings", JSON.stringify(settings));
     onSave(settings);
@@ -266,6 +270,32 @@ export default function SettingsModal({ isOpen, onClose, onSave }: SettingsModal
               </span>
             </div>
           )}
+
+          {/* RAG Retrieval Settings */}
+          <div className="flex flex-col gap-2 pt-3 border-t border-neutral-800">
+            <label className="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center justify-between">
+              <span className="flex items-center gap-1">
+                <Sliders className="size-3.5 text-neutral-400" />
+                Retrieval Chunks (k value)
+              </span>
+              <span className="text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded text-[11px] font-mono">
+                {kVal} Chunks
+              </span>
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="range"
+                min="1"
+                max="10"
+                value={kVal}
+                onChange={(e) => setKVal(Number(e.target.value))}
+                className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+              />
+            </div>
+            <span className="text-[10px] text-neutral-550 leading-relaxed">
+              Higher values (e.g. 5-8) retrieve more document sections for context, improving answers for large or dense documents but consuming more context window tokens. Default is 3.
+            </span>
+          </div>
         </div>
 
         {/* Modal Footer */}

@@ -606,8 +606,9 @@ ${formattedHistory}
       ],
     };
 
+    const kVal = parseInt(providerSettings?.k || 3, 10);
     const retriever = vectorStore.asRetriever({
-      k: 3,
+      k: kVal,
       filter: filter
     });
 
